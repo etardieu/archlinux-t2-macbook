@@ -1,0 +1,38 @@
+# Maintainer: arch-mact2 local package
+pkgname=t2-dsp
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Model-specific PipeWire/WirePlumber audio DSP for Apple T2 Macs'
+arch=('any')
+url='https://github.com/kaiT2en/KaiT2en-Fedora/tree/main/dsp'
+license=('GPL-3.0-or-later')
+depends=('pipewire' 'pipewire-audio' 'wireplumber>=0.5.8' 'lsp-plugins'
+	'bankstown' 'systemd' 'bash')
+makedepends=('python' 'make' 'git')
+source=('kait2en::git+https://github.com/kaiT2en/KaiT2en-Fedora.git#branch=main')
+sha256sums=('SKIP')
+
+# bankstown is an AUR package (LV2 virtual-bass plugin used by the speaker
+# graphs). Build and install it first; makepkg's dependency check will stop
+# otherwise.
+#
+# The package installs every model profile under /usr/share/t2-dsp/. The
+# per-model /etc/pipewire/pipewire.conf.d/51-t2-dsp.conf is deliberately not
+# written here: run `package-actions configure` explicitly, see the Phase 6
+# README. This keeps a package upgrade from changing the live audio graph.
+
+build() {
+	cd "${srcdir}/kait2en/dsp"
+	make build DATADIR=/usr/share
+}
+
+check() {
+	cd "${srcdir}/kait2en/dsp"
+	make test
+}
+
+package() {
+	cd "${srcdir}/kait2en/dsp"
+	# Avoid /usr/libexec: package-actions resolves lifecycle.py next to itself.
+	make install DESTDIR="${pkgdir}" PREFIX=/usr LIBEXECDIR=/usr/lib
+}

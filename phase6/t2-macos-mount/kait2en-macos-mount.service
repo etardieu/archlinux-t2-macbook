@@ -1,0 +1,12 @@
+[Unit]
+Description=Kait2en mount the readable macOS volumes read-only
+After=local-fs.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/t2-macos-mount/kait2en-macos-mount
+ExecStop=/usr/lib/t2-macos-mount/kait2en-macos-mount stop
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+[Unit]
+Description=Write the synchronized system time to the T2 SMC RTC
+# t2smc registers as rtc0 on MacBookPro15,2. Writing the clock from the kernel
+# does not reach it on x86: the kernel stops at the legacy CMOS clock.
+After=time-sync.target
+ConditionPathExists=/dev/rtc0
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/t2-rtc-sync/kait2en-rtc-sync
+
+[Install]
+WantedBy=multi-user.target

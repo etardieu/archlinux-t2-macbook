@@ -1,0 +1,1 @@
+SUBSYSTEM=="block", ENV{DEVTYPE}=="partition", KERNEL=="nvme*", ENV{ID_FS_TYPE}=="apfs", ENV{UDISKS_IGNORE}="1"

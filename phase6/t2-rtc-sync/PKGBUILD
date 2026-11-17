@@ -1,0 +1,25 @@
+# Maintainer: arch-mact2 local package
+pkgname=t2-rtc-sync
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Write the synchronized system time to the T2 SMC RTC'
+arch=('any')
+url='https://github.com/kaiT2en/KaiT2en-Fedora/blob/main/scripts/fedora/install-rtc-sync.sh'
+license=('GPL-3.0-or-later')
+depends=('systemd' 'util-linux')
+source=('kait2en-rtc-sync.service' 'kait2en-rtc-sync')
+sha256sums=('67c8acc78821f989d75c94de652b57e6d75d2ee3f2d2b4b2499289ef0e57b0c7'
+	'97ca55f53623b0ac415894ee27b6eb10c4d9abbbff0ae660ccf50202201eef3a')
+
+# The unit is installed disabled. It only writes a clock that chrony or
+# systemd-timesyncd reports as synchronized, and it targets /dev/rtc0 because
+# t2smc registers there on MacBookPro15,2. Enable it only after a network time
+# source is configured and the boot-time clock has been checked; see the
+# Phase 6 README.
+
+package() {
+	install -Dm755 kait2en-rtc-sync \
+		"${pkgdir}/usr/lib/t2-rtc-sync/kait2en-rtc-sync"
+	install -Dm644 kait2en-rtc-sync.service \
+		"${pkgdir}/usr/lib/systemd/system/kait2en-rtc-sync.service"
+}

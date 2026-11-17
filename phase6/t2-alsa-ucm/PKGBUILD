@@ -1,0 +1,26 @@
+# Maintainer: arch-mact2 local package
+pkgname=t2-alsa-ucm
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='ALSA UCM profiles for Apple T2 internal speakers, microphone and jack'
+arch=('any')
+url='https://github.com/kaiT2en/KaiT2en-Fedora/tree/main/modules/apple-t2-alsa-ucm-conf'
+license=('GPL-3.0-or-later')
+depends=('alsa-ucm-conf')
+makedepends=('git')
+source=('kait2en::git+https://github.com/kaiT2en/KaiT2en-Fedora.git#branch=main')
+sha256sums=('SKIP')
+
+# All three profiles are installed: the card name follows the speaker channel
+# count (AppleT2x2/x4/x6), so one package serves every model. This
+# MacBookPro15,2 reports AppleT2x4.
+
+package() {
+	local _ucm="${srcdir}/kait2en/modules/apple-t2-alsa-ucm-conf/ucm2"
+	install -d "${pkgdir}/usr/share/alsa/ucm2/conf.d"
+	cp -r "${_ucm}/AppleT2" "${pkgdir}/usr/share/alsa/ucm2/"
+	cp -r "${_ucm}/conf.d/AppleT2x2" "${_ucm}/conf.d/AppleT2x4" \
+		"${_ucm}/conf.d/AppleT2x6" "${pkgdir}/usr/share/alsa/ucm2/conf.d/"
+	find "${pkgdir}/usr/share/alsa/ucm2" -type d -exec chmod 0755 {} +
+	find "${pkgdir}/usr/share/alsa/ucm2" -type f -exec chmod 0644 {} +
+}

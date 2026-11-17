@@ -1,0 +1,31 @@
+# Maintainer: arch-mact2 local package
+_kait2en_commit=e661ff21f4eeecc6208ee3ff60ad17f90dc9d249
+pkgname=t2-services-common
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Shared T2 CDC-NCM network integration for KAIT2EN services'
+arch=('any')
+url='https://github.com/kaiT2en/KaiT2en-Fedora/tree/main/t2-services/shared'
+license=('GPL-3.0-or-later')
+depends=('networkmanager' 'iproute2' 'systemd')
+source=("kait2en-${_kait2en_commit}.tar.gz::https://codeload.github.com/kaiT2en/KaiT2en-Fedora/tar.gz/${_kait2en_commit}")
+sha256sums=('e82c6911bcd99eb5f131941c601a33774f9cdc6bb53338cf99dcaf2c09cc4eac')
+
+# Only the CDC-NCM integration required by BridgeXPC clients is included.
+# Deliberately omit KAIT2EN's suspend unit, migration helpers and lifecycle
+# actions: Touch ID does not need them, and suspend behavior is being assessed
+# separately. Vendor files under /usr/lib; do not overwrite local /etc config.
+package() {
+	local _srcdir="${srcdir}/KaiT2en-Fedora-${_kait2en_commit}/t2-services/shared"
+	install -Dm644 "${_srcdir}/integration/NetworkManager/10-t2-services.conf" \
+		"${pkgdir}/usr/lib/NetworkManager/conf.d/10-t2-services.conf"
+	install -d "${pkgdir}/usr/lib/udev/rules.d"
+	sed 's|/usr/sbin/ip|/usr/bin/ip|g' \
+		"${_srcdir}/integration/udev/90-t2-services-ncm.rules" \
+		> "${pkgdir}/usr/lib/udev/rules.d/90-t2-services-ncm.rules"
+	chmod 644 "${pkgdir}/usr/lib/udev/rules.d/90-t2-services-ncm.rules"
+	install -Dm644 "${srcdir}/KaiT2en-Fedora-${_kait2en_commit}/LICENSE" \
+		"${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+	install -Dm644 "${_srcdir}/README.md" \
+		"${pkgdir}/usr/share/doc/${pkgname}/README.md"
+}

@@ -1,0 +1,46 @@
+# Maintainer: arch-mact2 local package
+pkgname=t2-fan-control
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Fan curve control for Apple T2 MacBooks'
+arch=('x86_64')
+url='https://github.com/kaiT2en/KaiT2en-Fedora/tree/main/apps/t2-fan-control'
+license=('GPL-3.0-or-later')
+depends=('glib2' 'gtk4' 'libadwaita' 'systemd')
+makedepends=('rust' 'pkgconf' 'git')
+source=('kait2en::git+https://github.com/kaiT2en/KaiT2en-Fedora.git#branch=main')
+sha256sums=('SKIP')
+
+_appid=org.t2fancontrol.gtk
+_binname=t2-fancontrol-gtk
+_unit=t2-fancontrol.service
+
+# The daemon creates /etc/t2-fancontrol/config.txt on first start with
+# automatic_control_enabled=true. Review that default and the fan hand-back
+# behavior before enabling the unit.
+
+build() {
+	cd "${srcdir}/kait2en/apps/${pkgname}"
+	CARGO_TARGET_DIR="${srcdir}/cargo-target" cargo build --release --locked
+}
+
+check() {
+	cd "${srcdir}/kait2en/apps/${pkgname}"
+	CARGO_TARGET_DIR="${srcdir}/cargo-target" cargo test --release --locked
+}
+
+package() {
+	local _appdir="${srcdir}/kait2en/apps/${pkgname}"
+	install -Dm755 "${srcdir}/cargo-target/release/${_binname}" \
+		"${pkgdir}/usr/bin/${_binname}"
+	install -Dm644 "${_appdir}/${_appid}.desktop" \
+		"${pkgdir}/usr/share/applications/${_appid}.desktop"
+	sed -i 's#/usr/local/bin/#/usr/bin/#g' \
+		"${pkgdir}/usr/share/applications/${_appid}.desktop"
+	install -Dm644 "${_appdir}/assets/icons/hicolor/scalable/apps/${_appid}.svg" \
+		"${pkgdir}/usr/share/icons/hicolor/scalable/apps/${_appid}.svg"
+	install -Dm644 "${_appdir}/systemd/${_unit}" \
+		"${pkgdir}/usr/lib/systemd/system/${_unit}"
+	sed -i "s#/usr/local/bin/${_binname}#/usr/bin/${_binname}#" \
+		"${pkgdir}/usr/lib/systemd/system/${_unit}"
+}

@@ -1,0 +1,25 @@
+# Maintainer: arch-mact2 local package
+pkgname=t2-macos-mount
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Mount the readable macOS APFS volumes read-only under /media/macOS'
+arch=('any')
+url='https://github.com/kaiT2en/KaiT2en-Fedora/blob/main/scripts/fedora/install-macos-mount.sh'
+license=('GPL-3.0-or-later')
+depends=('systemd' 'util-linux' 'kmod' 'gawk' 'coreutils')
+optdepends=('linux-apfs-rw: APFS kernel module (installed as a DKMS module)')
+source=('kait2en-macos-mount'
+	'kait2en-macos-mount.service')
+sha256sums=('5c501ad453887148c2e81cb4fba6e2dd0fc45d6667e07471f17ab4e474ace0d8'
+	'c1c9208566adc93bcaf253e87654cae80490f3d90227527c2b98aeae67935e37')
+
+# The unit is installed disabled. Do not install the upstream udev rule by
+# default: it hides APFS partitions from file managers. That visibility change
+# is a separate, explicit opt-in documented in the Phase 6 README.
+
+package() {
+	install -Dm755 kait2en-macos-mount \
+		"${pkgdir}/usr/lib/t2-macos-mount/kait2en-macos-mount"
+	install -Dm644 kait2en-macos-mount.service \
+		"${pkgdir}/usr/lib/systemd/system/kait2en-macos-mount.service"
+}

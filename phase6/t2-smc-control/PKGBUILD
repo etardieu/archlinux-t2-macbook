@@ -1,0 +1,41 @@
+# Maintainer: arch-mact2 local package
+pkgname=t2-smc-control
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='SMC temperatures, power telemetry and battery gauging for Apple T2 MacBooks'
+arch=('x86_64')
+url='https://github.com/kaiT2en/KaiT2en-Fedora/tree/main/apps/t2-smc-control'
+license=('GPL-3.0-or-later')
+depends=('glib2' 'gtk4' 'libadwaita' 'polkit' 'systemd' 'util-linux')
+makedepends=('rust' 'pkgconf' 'git')
+source=('kait2en::git+https://github.com/kaiT2en/KaiT2en-Fedora.git#branch=main')
+sha256sums=('SKIP')
+
+_appid=org.t2smccontrol.gtk
+_unit=t2-smc-gaugingd.service
+
+build() {
+	cd "${srcdir}/kait2en/apps/${pkgname}"
+	CARGO_TARGET_DIR="${srcdir}/cargo-target" cargo build --release --locked
+}
+
+check() {
+	cd "${srcdir}/kait2en/apps/${pkgname}"
+	CARGO_TARGET_DIR="${srcdir}/cargo-target" cargo test --release --locked
+}
+
+package() {
+	local _appdir="${srcdir}/kait2en/apps/${pkgname}"
+	install -Dm755 "${srcdir}/cargo-target/release/${pkgname}" \
+		"${pkgdir}/usr/bin/${pkgname}"
+	install -Dm644 "${_appdir}/${_appid}.desktop" \
+		"${pkgdir}/usr/share/applications/${_appid}.desktop"
+	sed -i 's#/usr/local/bin/#/usr/bin/#g' \
+		"${pkgdir}/usr/share/applications/${_appid}.desktop"
+	install -Dm644 "${_appdir}/assets/icons/hicolor/scalable/apps/${_appid}.svg" \
+		"${pkgdir}/usr/share/icons/hicolor/scalable/apps/${_appid}.svg"
+	install -Dm644 "${_appdir}/systemd/${_unit}" \
+		"${pkgdir}/usr/lib/systemd/system/${_unit}"
+	sed -i "s#/usr/local/bin/${pkgname}#/usr/bin/${pkgname}#" \
+		"${pkgdir}/usr/lib/systemd/system/${_unit}"
+}

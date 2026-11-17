@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+# On x86 the kernel's NTP RTC sync writes the legacy CMOS clock, not the T2
+# SMC RTC. Wait for the configured time service before writing rtc0.
+i=0
+while [ "$i" -lt 60 ]; do
+	if [ "$(/usr/bin/timedatectl show --property=NTPSynchronized --value)" = yes ]; then
+		exec /usr/bin/hwclock --systohc --utc --rtc /dev/rtc0
+	fi
+	i=$((i + 1))
+	/usr/bin/sleep 3
+done
+
+echo "system clock did not synchronize within 180 seconds; leaving RTC unchanged" >&2
+exit 1

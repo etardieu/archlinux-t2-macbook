@@ -1,0 +1,35 @@
+# Maintainer: arch-mact2 local package
+pkgname=t2-kbd-backlight
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Keyboard backlight idle timeout for Apple T2 MacBooks'
+arch=('x86_64')
+url='https://github.com/kaiT2en/KaiT2en-Fedora/tree/main/apps/t2-kbd-backlight'
+license=('GPL-3.0-or-later')
+depends=('libinput' 'systemd' 'upower')
+makedepends=('rust' 'git')
+backup=('etc/kait2en/kbd-backlight.toml')
+source=('kait2en::git+https://github.com/kaiT2en/KaiT2en-Fedora.git#branch=main')
+sha256sums=('SKIP')
+
+build() {
+	cd "${srcdir}/kait2en/apps/t2-kbd-backlight"
+	CARGO_TARGET_DIR="${srcdir}/cargo-target" cargo build --release --locked
+}
+
+check() {
+	cd "${srcdir}/kait2en/apps/t2-kbd-backlight"
+	CARGO_TARGET_DIR="${srcdir}/cargo-target" cargo test --release --locked
+}
+
+package() {
+	local _srcdir="${srcdir}/kait2en/apps/t2-kbd-backlight"
+	install -Dm755 "${srcdir}/cargo-target/release/t2-kbd-backlight" \
+		"${pkgdir}/usr/bin/t2-kbd-backlight"
+	install -Dm644 "${_srcdir}/systemd/t2-kbd-backlight.service" \
+		"${pkgdir}/usr/lib/systemd/system/t2-kbd-backlight.service"
+	sed -i 's#/usr/local/bin/t2-kbd-backlight#/usr/bin/t2-kbd-backlight#' \
+		"${pkgdir}/usr/lib/systemd/system/t2-kbd-backlight.service"
+	install -Dm644 "${_srcdir}/config/kbd-backlight.toml" \
+		"${pkgdir}/etc/kait2en/kbd-backlight.toml"
+}

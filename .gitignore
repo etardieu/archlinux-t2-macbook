@@ -1,0 +1,14 @@
+# Local machine reports and package/build output
+phase1-report.txt
+*.pkg.tar.*
+*.src.tar.gz
+kait2en-*.tar.gz
+*.iso
+*.iso.sha256
+pkg/
+src/
+vendor/
+cache/
+
+# Do not publish proprietary firmware or locally staged copies
+firmware/

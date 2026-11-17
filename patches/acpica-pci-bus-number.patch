@@ -1,0 +1,41 @@
+diff --git a/drivers/acpi/acpica/hwpci.c b/drivers/acpi/acpica/hwpci.c
+index 3bd5ebc..b27e3f1 100644
+--- a/drivers/acpi/acpica/hwpci.c
++++ b/drivers/acpi/acpica/hwpci.c
+@@ -13,7 +13,6 @@ ACPI_MODULE_NAME("hwpci")
+ 
+ /* PCI configuration space values */
+ #define PCI_CFG_HEADER_TYPE_REG             0x0E
+-#define PCI_CFG_PRIMARY_BUS_NUMBER_REG      0x18
+ #define PCI_CFG_SECONDARY_BUS_NUMBER_REG    0x19
+ /* PCI header values */
+ #define PCI_HEADER_TYPE_MASK                0x7F
+@@ -358,17 +357,18 @@ acpi_hw_get_pci_device_info(struct acpi_pci_id *pci_id,
+ 		return (AE_OK);
+ 	}
+ 
+-	/* Bridge: Get the Primary bus_number */
+-
+-	status = acpi_os_read_pci_configuration(pci_id,
+-						PCI_CFG_PRIMARY_BUS_NUMBER_REG,
+-						&pci_value, 8);
+-	if (ACPI_FAILURE(status)) {
+-		return (status);
+-	}
+-
++	/*
++	 * Bridge: The bus number of the bridge itself is already known, either
++	 * from the secondary bus number of the parent bridge or from the _BBN
++	 * of the root bridge. Do not replace it with the primary bus number
++	 * register of the bridge: that register reads as zero after the bridge
++	 * has been powered up (e.g. from D3cold, while its _PS0 is executing)
++	 * and before the OS has restored its configuration space. The derived
++	 * PCI ID would then refer to bus 0, and since it is cached for the
++	 * lifetime of the operation region, all later accesses would go to
++	 * the wrong device.
++	 */
+ 	*is_bridge = TRUE;
+-	pci_id->bus = (u16)pci_value;
+ 
+ 	/* Bridge: Get the Secondary bus_number */
+ 
